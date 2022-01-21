@@ -21,7 +21,8 @@ async function processChain(c) {
             value: -1,
             account: null
         },
-        ourStake: -1
+	ahead: 0,
+	ourStake: -1
     };
 
     const provider = new WsProvider(c.ws);
@@ -31,11 +32,14 @@ async function processChain(c) {
     stats.candidatePoolSize = candidatePool.length;
 
     if (c.validator) {
-        candidatePool.forEach(element => {
-            if (element.owner.toString() == c.validator) {
-                stats.ourStake = element.amount / 10000000000;         
+        let ourState = await api.query.parachainStaking.collatorState2(c.validator);
+        ourState = ourState.toJSON();
+	    candidatePool.forEach(element => {
+            if (element.amount > ourState.totalBacking) {
+                stats.ahead++;     
             }
         });
+        stats.ourStake = ourState.totalBacking / 10000000000;
     }
 
     let selectedCollators = await api.query.parachainStaking.selectedCandidates()
@@ -73,7 +77,8 @@ async function main() {
         Active collators: ${s.activeCollators}
         Candidate pool size: ${s.candidatePoolSize}
         Our stake: ${s.ourStake} PONT
-        Min stake: ${s.minStake.value} ${c.token}`; // (${s.minStake.account})`;
+        Min stake: ${s.minStake.value} ${c.token}
+        Ahead: ${s.ahead}`; // (${s.minStake.account})`;
         console.log(message);
     }
 }
