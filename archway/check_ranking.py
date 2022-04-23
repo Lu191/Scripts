@@ -48,20 +48,26 @@ def main(address):
                 with open('rank.json', 'w', encoding='utf-8') as f:
                     file_output = { "signatures" : signatures, "blocks" : i + 1 }
                     json.dump(file_output, f, ensure_ascii=False, indent=4)
-            except ConnectionError:
-                print("Connection issues!")
+            except KeyboardInterrupt:
+                sys.exit()
+            except:
+                print("Something went wrong!")
+                sys.exit()
         sys.stdout.write('\n')
         pos = get_position(my_address, signatures)
         if (pos != 0):
             print(f"My validator position: {pos}")
         else:
             print("My validator didn't propose any blocks")
-    except ConnectionError:
-        print("Connection issues!")
+    except KeyboardInterrupt:
+        sys.exit()
+    except:
+        print("Something went wrong!")
+        sys.exit()
     
 if __name__ == "__main__":
     if(len(sys.argv) != 2):
         print("python rank.py <val_hex_address>")
     else:
         main(sys.argv[1])
-    exit()
+    sys.exit()
